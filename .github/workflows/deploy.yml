@@ -12,16 +12,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install sshpass
-        run: sudo apt-get update && sudo apt-get install -y sshpass
-
       - name: Deploy via SSH
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key
-          chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }} << 'EOF'
-            mkdir -p /opt/monitoring
-            cd /opt/monitoring
-            docker compose down 2>/dev/null || true
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key
+          chmod 600 key
+          # Копируем файлы из текущего репозитория на сервер
+          scp -o StrictHostKeyChecking=no -i key -r ./* ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }}:/opt/monitoring/
+          # Запускаем контейнеры
+          ssh -o StrictHostKeyChecking=no -i key ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }} "
+            cd /opt/monitoring &&
+            docker compose down 2>/dev/null || true &&
             docker compose up -d
-          EOF
+          "
