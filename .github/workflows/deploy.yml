@@ -1,0 +1,26 @@
+name: Deploy Monitoring Stack
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p /opt/monitoring
+            cd /opt/monitoring
+            cp -r /home/runner/work/Monitoring-stack/Monitoring-stack/* . 2>/dev/null || true
+            docker-compose down 2>/dev/null || true
+            docker-compose up -d
