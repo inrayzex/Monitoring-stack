@@ -16,7 +16,7 @@ jobs:
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > key
           chmod 600 key
-          # Копируем файлы из текущего репозитория на сервер
+          # Копируем файлы на сервер
           scp -o StrictHostKeyChecking=no -i key -r ./* ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }}:/opt/monitoring/
           # Запускаем контейнеры
           ssh -o StrictHostKeyChecking=no -i key ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }} "
